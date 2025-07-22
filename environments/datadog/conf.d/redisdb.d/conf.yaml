@@ -1,0 +1,8 @@
+instances:
+  - host: redis
+    port: 6379
+    password: changeme
+    db: 0
+    tags:
+      - "env:development"
+      - "service:nautobot-redis"

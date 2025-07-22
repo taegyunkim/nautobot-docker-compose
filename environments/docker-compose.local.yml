@@ -1,19 +1,61 @@
 ---
 services:
   nautobot:
-    command: "nautobot-server runserver 0.0.0.0:8080"
+    command: "nautobot-server start --ini /opt/nautobot/uwsgi.ini"
+    # command: "nautobot-server runserver 0.0.0.0:8080"
     ports:
       - "8080:8080"
     volumes:
       - "../config/nautobot_config.py:/opt/nautobot/nautobot_config.py"
       - "../jobs:/opt/nautobot/jobs"
+      - "./uwsgi.ini:/opt/nautobot/uwsgi.ini"
+    environment:
+      - DD_ENV=development
+      - DD_SERVICE=nautobot
+      - DD_VERSION=2.3.6
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_PROFILING_ENABLED=true
+      - DD_TRACE_ENABLED=true
+      - DD_LOGS_INJECTION=true
     healthcheck:
       interval: "30s"
       timeout: "10s"
       start_period: "60s"
       retries: 3
       test: ["CMD", "true"]  # Due to layering, disable: true won't work. Instead, change the test
+    depends_on:
+      - datadog-agent
   celery_worker:
     volumes:
       - "../config/nautobot_config.py:/opt/nautobot/nautobot_config.py"
       - "../jobs:/opt/nautobot/jobs"
+    environment:
+      - DD_ENV=development
+      - DD_SERVICE=nautobot-celery
+      - DD_VERSION=2.3.6
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_PROFILING_ENABLED=true
+      - DD_TRACE_ENABLED=true
+      - DD_LOGS_INJECTION=true
+    depends_on:
+      - datadog-agent
+
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:latest
+    env_file:
+      - datadog.env
+    environment:
+      - DD_SITE=datadoghq.com
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true # enables agent to receive custom metrics from other containers
+      - DD_APM_ENABLED=true # enables tracing
+      - DD_APM_NON_LOCAL_TRAFFIC=true # enables agent to receive traces from other containers
+      - DD_AGENT_HOST=datadog-agent # allows web container to forward traces to agent
+      - DD_HOSTNAME=nautobot-docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - "./datadog/conf.d:/etc/datadog-agent/conf.d:ro"

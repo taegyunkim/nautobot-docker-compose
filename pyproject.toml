@@ -5,8 +5,9 @@ description = ""
 authors = ["John Doe <johndoe@mail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
-nautobot = "2.3.6"
+python = "3.11.13"
+nautobot = "2.4.10"
+ddtrace = "3.8.1"
 
 # nautobot-example-plugin = {path = "plugins/plugin_example", develop = true}
 
