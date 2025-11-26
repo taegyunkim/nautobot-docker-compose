@@ -43,7 +43,7 @@ cd nautobot-docker-compose
 1. Build Poetry Environment
 
 ```bash
-poetry shell
+eval $(poetry env activate)
 poetry lock
 poetry install
 ```
