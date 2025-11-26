@@ -44,8 +44,6 @@ services:
 
   datadog-agent:
     image: gcr.io/datadoghq/agent:latest
-    env_file:
-      - datadog.env
     environment:
       - DD_SITE=datadoghq.com
       - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true # enables agent to receive custom metrics from other containers
