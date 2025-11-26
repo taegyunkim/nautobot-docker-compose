@@ -303,5 +303,4 @@ creds.env
 
 
 # Invoke overrides
-invoke.yml
 datadog.env
